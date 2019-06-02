@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="lookupFlow" doc:id="33b31963-8120-4f1f-a449-28e732bcc3ea">
+		<scheduler doc:name="Scheduler" doc:id="f0047af0-8f72-4e42-9a20-869ce65f1eff">
+			<scheduling-strategy>
+				<fixed-frequency timeUnit="DAYS" />
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="Transform Message"
+			doc:id="1536feb7-4889-45a5-b0ba-2c76e88eeebc">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+Mule::lookup('flow2', {test:'hello '})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="fd352b92-da4a-42c2-b411-d4195e69ede6" message="#[payload]"/>
+	</flow>
+
+	<flow name="flow2">
+		<set-payload value='#[payload.test ++ "world"]' doc:name="Set Payload" />
+		<logger level="INFO" doc:name="Logger" message='#[payload]' />
+	</flow>
+</mule>
