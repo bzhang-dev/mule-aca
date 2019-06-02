@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/
 			</scheduling-strategy>
 		</scheduler>
 		<os:retrieve doc:name="lastAccountID" doc:id="43f12626-a30f-4abf-b9eb-0c9caa11d2a7" key="lastAccountID" target="lastAccountID">
-			<os:default-value ><![CDATA[0]]></os:default-value>
+			<os:default-value ><![CDATA[#[0]]]></os:default-value>
 		</os:retrieve>
 		<db:select doc:name="accounts" doc:id="b053a31c-6c98-4a82-a585-a6c51224799a" config-ref="Database_Config">
 			<db:sql >SELECT * 

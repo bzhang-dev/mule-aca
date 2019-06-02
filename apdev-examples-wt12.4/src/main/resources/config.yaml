@@ -7,7 +7,7 @@ sfdc:
   token: "your_token"
   
 file:
-  accountsDir: "your_path_to_APDevFundamentals4.1_studentFiles/resources"
+  accountsDir: "C:/Users/BoyuanZhang/Desktop/MUFundamentals4.1_studentFiles_22sept2018/resources"
   
 db:
   host: "mudb.learn.mulesoft.com"
