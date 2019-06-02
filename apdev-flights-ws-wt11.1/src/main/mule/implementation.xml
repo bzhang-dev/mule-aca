@@ -9,6 +9,12 @@ http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="getFlights" doc:id="2f5b1af1-ce81-4aab-9c08-e6bca391c2cf" >
+		<http:listener doc:name="Listener" doc:id="30c2e3f4-6220-464e-b09a-ff15a7890d8f" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="GET">
+			<http:response statusCode="#[vars.httpStatus default 200]" />
+			<http:error-response statusCode="#[vars.httpStatus default 500]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
 		<set-variable value="#[attributes.queryParams.airline]" doc:name="airline" doc:id="f14cba8b-52a2-411c-9c72-d8fa40135fdc" variableName="airline"/>
 		<flow-ref doc:name="setCode" doc:id="e1ce78a3-9b9b-4154-addf-f7b358f6a018" name="setCode"/>
 		<validation:is-true doc:name="Is valid destination" doc:id="68c6132d-6075-493b-b0b3-8272d039b371" expression="#[['SFO','LAX','CLE','PDX','PDF'] contains vars.code]" message="#['Invalid destination' ++ ' ' ++ (vars.code default ' ')]">
@@ -37,6 +43,34 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="b50c4841-bc07-4a64-927a-174e6c2671ac" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="717541ad-6bfd-40a0-a71c-d86dbcc97ac0" type="AMERICAN-FLIGHTS-API:BAD_REQUEST">
+				<ee:transform doc:name="No flights" doc:id="e49bdb33-81b3-49ba-b4c3-0bdee9a449f8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "No flights to " ++ vars.code as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="200" doc:name="httpStatus" doc:id="c92fcb3c-b67d-4e2b-a991-8c31d5ea00a6" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0221c537-8eba-44eb-af9e-10c3909f6b74" >
+				<ee:transform doc:name="error.description" doc:id="0ae53973-7f23-45bb-82b6-cf45899582dd" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="a5c82916-bbb6-4f08-8738-6382750134ea" variableName="httpStatus"/>
+			</on-error-continue>
+		</error-handler>
 	</flow>
 	<flow name="getAllAirlineFlights" doc:id="c61aa070-12a2-418c-ba9f-c4d68893d88a" >
 		<scatter-gather doc:name="Scatter-Gather" doc:id="07cfc69e-14db-4eab-b049-e1bff70fb1cf" >
@@ -218,66 +252,9 @@ payload.body.ns0#findFlightResponse.*return map ( return , indexOfReturn ) -> {
 				<ee:set-variable variableName="DWoutput" ><![CDATA[%dw 2.0
 output application/xml
 ---
-data: {
-	hub: "MUA",
-	flight @(airline: payload.airline): {
-		code: payload.toAirportCode,
-		
-	}
-}]]></ee:set-variable>
+payload]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="5840c89d-8a62-44cf-af84-ed097721b71a" message="#[vars.DWoutput]"/>
-	</flow>
-	<flow name="postMultipleFlights" doc:id="676199e7-4673-404e-9af3-36d3a01d4409" >
-		<http:listener doc:name="POST /multipleflights" doc:id="972fcef1-0c61-4d5b-8691-31b069fd4a16" config-ref="HTTP_Listener_config" path="/multipleflights" allowedMethods="POST"/>
-		<ee:transform doc:name="Transform Message" doc:id="a1ba02a3-6a90-48c9-943d-9943a1cd36cb" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-//output application/dw
-output application/json
-import dasherize from dw::core::Strings
-type Currency = String {format: "###.00"}
-type Flight = Object {class: "com.mulesoft.training.Flight"}
-//var numSeats = 400
-//var numSeats = (x=400) -> x
-/*var numSeats = (planeType: String) -> 
- * 	if (planeType contains('737'))
- * 		150
- * 	else
- * 		300
- */
-fun getNumSeats(planeType: String) =
-	if (planeType contains('737'))
-		150
-	else
-		300
----
-using (flights = 
-	payload..*return map (object, index) -> {
-	destination: object.destination,
-	price: object.price as Number as Currency,
-//		totalSeats: getNumSeats(object.planeType as String),
-	planeType: dasherize(replace(object.planeType,/(Boing)/) with "Boeing"),
-	departureDate: object.departureDate as Date {format: "yyyy/MM/dd"} as String {format: "MMM dd, yyyy"},
-	availableSeats: object.emptySeats as Number
-} as Flight
-)
-
-//flights orderBy $.departureDate orderBy $.price distinctBy $ filter ($.availableSeats !=0)
-
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<ee:transform doc:name="filter orderBy  groupBy" doc:id="4fe6c99c-148b-4a42-adcf-158d6a01f6ed">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload filter $.price<500 orderBy ($.airline) groupBy($.toAirportCode) 
-]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="94ad2b16-550f-4a6b-933b-1fd7c02c8ed5" />
+		<logger level="INFO" doc:name="Logger" doc:id="5840c89d-8a62-44cf-af84-ed097721b71a" />
 	</flow>
 </mule>
