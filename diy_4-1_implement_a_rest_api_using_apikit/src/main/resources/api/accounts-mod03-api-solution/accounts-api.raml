@@ -4,14 +4,9 @@ title: Accounts API
 types:
   Account: !include datatypes/account.raml
   AccountNoID: !include datatypes/accountNoID.raml
+  AccountID: !include datatypes/accountID.raml
 
 /accounts:
-  /{id}:
-    get:
-      queryParameters:
-        idType:
-          required: false
-          type: string
   get:
     description: Retrieves accounts based on the given query parameters.
     headers:
@@ -67,3 +62,57 @@ types:
             example: {
               "message": "Accounts uploaded (but not really)."
             }
+  /{id}:
+    get:
+      description: Retrieves accounts based on the given query parameters.
+      responses:
+        400:
+          body:
+            application/json:
+              example: !include examples/accountExampleIDError.raml
+        200:
+          description: Returns an AccountID objects in JSON
+          body:
+            application/json:
+              type: AccountID
+              example:  !include examples/accountExampleID.raml
+    put:
+      description: Retrieves accounts based on the given query parameters.
+      responses:
+        400:
+          body:
+            application/json:
+              example: !include examples/accountExampleIDError.raml
+        200:
+          description: Returns an AccountID objects in JSON
+          body:
+            application/json:
+              type: AccountID
+              example:  !include examples/accountExampleIDPUT.raml
+    patch:
+      description: Retrieves accounts based on the given query parameters.
+      responses:
+        400:
+          body:
+            application/json:
+              example: !include examples/accountExampleIDError.raml
+        200:
+          description: Returns an AccountID objects in JSON
+          body:
+            application/json:
+              type: AccountID
+              example:  !include examples/accountExampleIDPATCH.raml
+    delete:
+      description: delete account based on the given query parameters.
+      responses:
+        400:
+          body:
+            application/json:
+              example: !include examples/accountExampleIDError.raml
+        200:
+          description: Returns an AccountID objects in JSON
+          body:
+            application/json:
+              type: AccountID
+              example:  !include examples/accountExampleIDDELETE.raml
+    
