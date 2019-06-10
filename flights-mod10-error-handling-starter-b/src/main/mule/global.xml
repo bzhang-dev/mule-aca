@@ -2,39 +2,44 @@
 
 <mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
 	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 
 	<wsc:config name="Web_Service_Delta" doc:name="Web Service Consumer Config"
-		doc:id="a6d2b829-21ed-4826-b927-9a42b29a893d">
+		doc:id="4fcb75bf-6328-4f6e-9b33-577719e3fb7e">
 		<wsc:connection wsdlLocation="${delta.wsdl}" service="${delta.service}"
 			port="${delta.port}" address="${delta.address}" />
 	</wsc:config>
 	<configuration-properties doc:name="Configuration properties"
-		doc:id="b149d808-4c5f-4903-910c-d8211f865f8f" file="configuration.yaml" />
+		doc:id="cf09c68f-e22a-4b87-9505-9834a21a6ba2" file="configuration.yaml" />
 	<http:request-config name="HTTP_Request_American"
-		doc:name="HTTP Request configuration" doc:id="2942369b-5d4d-4241-8036-61e82d68a8ec">
+		doc:name="HTTP Request configuration" doc:id="b2b93f83-6761-430e-b349-b9943da14712">
 		<http:request-connection host="${american.host}"
 			port="${american.port}" />
 	</http:request-config>
 	<http:request-config name="HTTP_Request_United"
-		doc:name="HTTP Request configuration" doc:id="d3b79d3d-dfec-4736-9189-05eb3fc0508b">
+		doc:name="HTTP Request configuration" doc:id="f3206714-ca64-41e0-a57f-556379bfd4ff">
 		<http:request-connection host="${united.host}"
 			port="${united.port}" />
 	</http:request-config>
 	<http:listener-config name="HTTP_Listener_config"
-		doc:name="HTTP Listener config" doc:id="cd88f70a-938a-4bc2-8a81-800db8832d9b">
+		doc:name="HTTP Listener config" doc:id="9ea3c362-c803-4a0e-adc5-ba0e4dc47d28">
 		<http:listener-connection host="0.0.0.0"
 			port="8081" />
 	</http:listener-config>
-	<configuration doc:name="Configuration" doc:id="82fc6ef0-99de-4589-a5f1-ba557ce87f75" defaultErrorHandler-ref="globalError_Handler" />
-	<error-handler name="globalError_Handler" doc:id="e71abddb-327f-4347-a22d-3080828c26d2" >
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="71fa803a-08c3-4599-9685-586120d03596" >
-			<logger level="INFO" doc:name="Logger" doc:id="49249900-58fb-435e-8955-bfb46def73fd" message="#[payload]"/>
+	<configuration doc:name="Configuration"
+		doc:id="6c5e129d-0895-4ae8-9dbc-cdb1155c5458" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler"
+		doc:id="03c5ad3a-1a34-4e53-a24d-2737e200d454">
+		<on-error-propagate enableNotifications="true"
+			logException="true" doc:name="On Error Propagate" doc:id="37e6b056-63eb-47cf-80f2-a1ebe5e5f014">
+			<logger level="ERROR" doc:name="Logger"
+				doc:id="3f87c45f-faad-4e90-bf47-d7b2ba27d943"
+				message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]' />
 		</on-error-propagate>
 	</error-handler>
 

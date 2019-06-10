@@ -1,35 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-
-	<sub-flow name="filterBinary" doc:id="018b3d19-1ad2-4afa-b557-983a08bd121b" >
-		<choice doc:name="Choice" doc:id="0b42dacc-1b08-46ec-99d9-d803494b0089" >
-			<when expression='#[typeOf(payload) as String != "Binary"]' >
-				<logger level="INFO" doc:name="Logger" doc:id="6148eccf-1276-40e2-b88f-766c62a80c33" message="Payload binary check complete"/>
+	<error-handler name="standardize-error-handler" doc:id="576a1f90-d9f1-436d-a707-f898a0cc62f8" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0a3d46c0-b3a6-4759-8366-2db8a44ec4b6" type="HTTP:BAD_REQUEST">
+				<ee:transform doc:name="Empty Array" doc:id="ab4eaae4-f581-4351-8df3-404512d06aa5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java 
+---
+[]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4f2c7540-865f-41ed-adf3-4bd1acee9019" type="EXPRESSION">
+				<logger level="INFO" doc:name="DW transform errors" doc:id="7627e9b4-a9ea-4630-8de8-ad2baf8fc0bc" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]' />
+			</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="673be0fd-6c9a-4829-9e4a-88cb6a347af8" type="WSC:BAD_REQUEST">
+			<logger level="ERROR" doc:name="WSC:BAD_REQUEST" doc:id="8c874b28-322c-45e5-a48b-2979ee8cf99a" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]'/>
+		</on-error-propagate>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4600f5e3-73ae-4df5-a7d2-25a0f5893b16" type="DELTA:BAD_WSC_REQUEST">
+			<logger level="ERROR" doc:name="DELTA:BAD_WSC_REQUEST" doc:id="84a46436-8f41-4bd0-9c91-2476171016a5" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]'/>
+		</on-error-continue>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="01853581-0a0f-480d-a32b-a95d56ead8d3" type="ANY">
+				<logger level="INFO" doc:name="ANY" doc:id="46ccf581-796a-40f1-be3f-3aa9c6d2beba" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]' />
+			</on-error-propagate>
+	</error-handler>
+	<sub-flow name="filterBinary" doc:id="a4a8bf6e-80cd-41de-a6bd-f154fd7a4099">
+		<choice doc:name="Choice" doc:id="3dcc3f32-c938-4706-8907-b84f30eea53b">
+			<when expression='#[typeOf(payload) as String != "Binary"]'>
+				<logger level="INFO" doc:name="Logger"
+					doc:id="8642c9af-e5b6-40c0-8ac0-75c9047ff430" message="Payload binary check complete" />
 			</when>
-			<otherwise >
-				<set-payload value="#[[]]" doc:name="Set Payload" doc:id="9ea464be-a5a4-49c6-ae70-cc06e89dba39" />
+			<otherwise>
+				<set-payload value="#[[]]" doc:name="Set Payload"
+					doc:id="6d0591c2-0750-4df2-840c-4d48bf957fe1" />
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<flow name="getAmerican" doc:id="9f9e6fef-5d73-429b-bb7c-9f32ffba48bc" >
-		<http:request method="GET" doc:name="Get American Flights" doc:id="9e23c7a9-e43b-43a4-b839-46a120c9a9ab" config-ref="HTTP_Request_American" path="${american.path}">
+	<flow name="getAmerican" doc:id="ee86c284-41bc-475e-aae7-f860ce550bb5">
+		<http:request method="GET" doc:name="Get American Flights" doc:id="2d936a5d-35e0-4b74-9c04-ecc1ebdc894a" config-ref="HTTP_Request_American" path="${american.path}">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
 	destination : vars.destinationCode
 }]]]></http:query-params>
 		</http:request>
-		<logger level="INFO" doc:name="Logger" doc:id="f449cf5f-0b79-4678-b225-00aff8989023" message='#["American payload type: " ++ typeOf(payload)]'/>
-		<choice doc:name="Choice" doc:id="5d0338d4-c21b-4ccf-b245-33cf633d103a" >
+		<logger level="INFO" doc:name="Logger" doc:id="4bee82e6-2284-44b6-8fcc-b59323b93526" message='#["American payload type: " ++ typeOf(payload)]'/>
+		<choice doc:name="Choice" doc:id="a4ad7cac-abe2-49c5-88c3-9e2a9853078d" >
 			<when expression="#[not isEmpty(payload)]" >
-				<ee:transform doc:name="Transform Message" doc:id="283868c6-1fe6-4552-a1bc-39c55328684b">
+				<ee:transform doc:name="Transform Message" doc:id="d83be877-6cd6-432c-92d3-574f3e4449a6">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -51,23 +79,24 @@ payload as Array map ((flight,index) ->
 		</ee:transform>
 			</when>
 			<otherwise >
-				<set-payload value='#[[]]' doc:name="Set Payload" doc:id="2ae1468a-ec95-4383-a89e-22957aa09e5d"/>
+				<set-payload value='#[[]]' doc:name="Set Payload" doc:id="3db68393-72c9-4ef8-95b4-4b27a0f25cb2"/>
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="getUnited" doc:id="bb5b84aa-df6b-4e13-be74-375bce1db7df" >
-		<http:request method="GET" doc:name="Get United Flights" doc:id="ff859208-c4cf-40b6-a274-08a7d3fc8685" config-ref="HTTP_Request_United" path="${united.path}/{destinationCode}">
-			<http:uri-params ><![CDATA[#[output applicaton/java
+	<error-handler ref="standardize-error-handler"/>
+</flow>
+	<flow name="getUnited" doc:id="58bae6be-fd85-49e1-af9a-04daa67bc2c7" >
+		<http:request method="GET" doc:name="Get United Flights" doc:id="771d20f9-08b1-49ce-97d3-b70a3892db21" config-ref="HTTP_Request_United" path="${united.path}/{destinationCode}">
+			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
 	destinationCode : vars.destinationCode
 }]]]></http:uri-params>
 		</http:request>
-		<flow-ref doc:name="filterBinary" doc:id="795aeede-3965-4696-9265-138a485e6e33" name="filterBinary"/>
-		<logger level="INFO" doc:name="Logger" doc:id="494d913f-1d88-4405-bdf3-6ad676559d18" message='#["United payload type: " ++ typeOf(payload)]'/>
-		<choice doc:name="Choice" doc:id="6aa60fb1-498b-40c3-a7e8-f3f20fb4c3b4" >
+		<flow-ref doc:name="filterBinary" doc:id="ec6fb74f-a86d-489b-96f1-20edeaaf3234" name="filterBinary"/>
+		<logger level="INFO" doc:name="Logger" doc:id="e0584c50-dcdf-4ee4-9054-0ce20dff46d9" message='#["United payload type: " ++ typeOf(payload)]'/>
+		<choice doc:name="Choice" doc:id="a4d90a51-07ee-4849-a81f-fc0dfeadb89f" >
 			<when expression="#[not isEmpty(payload.flights default [])]" >
-				<ee:transform doc:name="Transform Message" doc:id="3a9cffbf-4240-480c-89d8-d9a81f62a919">
+				<ee:transform doc:name="Transform Message" doc:id="9afa9e43-1c11-48ff-ac8c-d20987312d36">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -90,12 +119,13 @@ output application/json
 		</ee:transform>
 			</when>
 			<otherwise >
-				<set-payload value="#[[]]" doc:name="Set Payload" doc:id="cd5e240b-e5a6-46e8-9cc5-a0bea089e590" />
+				<set-payload value="#[[]]" doc:name="Set Payload" doc:id="1d56cd5a-26dd-4cd8-962e-0529de7ef63f" />
 			</otherwise>
 		</choice>
+			<error-handler ref="standardize-error-handler"/>
 	</flow>
-	<flow name="getDelta" doc:id="6c6e6047-3562-4b5e-8258-57162bb3c4d4" >
-		<ee:transform doc:name="Build SOAP request" doc:id="7a7a8d53-a6e8-4062-8e3b-ace9b0e765ef" >
+	<flow name="getDelta" doc:id="29f4b9d1-8355-4a1c-a526-c1117cfea6c9" >
+		<ee:transform doc:name="Build SOAP request" doc:id="15f2041a-567e-46c3-8e52-455cf24e3404" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/xml
@@ -108,9 +138,33 @@ ns ns0 http://soap.training.mulesoft.com/
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<wsc:consume doc:name="Consume" doc:id="7ea12163-be51-4a88-b246-878b873fd4c6" config-ref="Web_Service_Delta" operation="findFlight"/>
-		<logger level="INFO" doc:name="Logger" doc:id="a928a159-4d3f-4a5c-9989-e6c14d39c00e" message='#["Delta payload type: " ++ typeOf(payload.body)]'/>
-		<ee:transform doc:name="Transform Message" doc:id="22d2247f-206e-4cfb-82a4-a7a3aade1d6d" >
+		<try doc:name="Try" doc:id="7fad7456-5e6f-4aae-bb91-faade93d2ec6" >
+			<wsc:consume doc:name="Consume" doc:id="b59f1773-5a22-49a8-aba9-b93a12223c17" config-ref="Web_Service_Delta" operation="findFlights" >
+				<error-mapping sourceType="WSC:BAD_REQUEST" targetType="DELTA:BAD_WSC_REQUEST" />
+			</wsc:consume>
+			<logger level="INFO" doc:name="Logger" doc:id="e810594f-e85c-4322-9d99-b3fe0b0a6aae" message='#["Delta payload type: " ++ typeOf(payload.body)]' />
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d6fe4d5e-1d85-4141-bc3e-f1e01feeb776" when='error.description contains "operation [findFlights]"'>
+					<logger level="ERROR" doc:name="errorType" doc:id="b944892b-b814-4db8-ae41-6ee9df98354b" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]'/>
+				</on-error-propagate>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="eb58a65b-29bd-47ba-9414-63b29fca5e1d" type="WSC:BAD_REQUEST, WSC:BAD_RESPONSE, WSC:RETRY_EXHAUSTED, WSC:TIMEOUT">
+					<ee:transform doc:name="Empty Object" doc:id="299154b7-eeb1-4b58-bb00-100742d49045" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="ERROR" doc:name="errorType" doc:id="464b3869-0c68-4e60-826c-dd64dce3c3d0" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]'/>
+				</on-error-continue>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0620bfd5-d8a0-4d69-93b6-54bcaf95fdc3" >
+					<logger level="INFO" doc:name="errorType" doc:id="8060b517-1d7f-442e-a45f-5528471da445" message='#[(error.errorType.namespace default "") ++ ":" ++ (error.errorType.identifier default "")]'/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message" doc:id="3bb15d9c-8722-42c5-a6b1-e13891ace8d0" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -130,5 +184,6 @@ output application/json
 )]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			<error-handler ref="standardize-error-handler"/>
 	</flow>
 </mule>

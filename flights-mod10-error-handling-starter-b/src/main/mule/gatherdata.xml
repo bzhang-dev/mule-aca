@@ -13,7 +13,18 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	<flow name="gatherdataFlow" doc:id="a277507d-ae61-4ffa-84c1-0114f134b5c7">
 		<http:listener doc:name="HTTP: GET /flights/{destination}"
 			doc:id="8a8c8329-b531-4e47-abb8-83e457265cd1" path="/flights/{destination}"
-			config-ref="HTTP_Listener_config" />
+			config-ref="HTTP_Listener_config" >
+			<http:error-response >
+				<http:body ><![CDATA[#[output application/json
+---
+{
+	errorObject: error.errorType,
+	errorNamespace: error.errorType.namespace,
+	errorID: error.errorType.identifier,
+	description: error.description
+}]]]></http:body>
+			</http:error-response>
+		</http:listener>
 		<set-variable value="#[attributes.uriParams.destination]"
 			doc:name="destination" doc:id="461de16d-d743-4a79-9326-b1aa67bfa151"
 			variableName="destinationCode" />
@@ -21,8 +32,10 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			doc:name="maxPrice" doc:id="6994cffa-d1dd-47ea-8d6c-884d12635f4e"
 			variableName="maxPrice" />
 		<validation:is-not-null doc:name="maxPrice"
-			doc:id="6211fe73-e971-4dce-ae90-e4b399313878" value="vars.maxPrice"
-			message="Max price is not set. Please pass in a maxprice query parameter." />
+			doc:id="6211fe73-e971-4dce-ae90-e4b399313878" value="#[vars.maxPrice]"
+			message="Max price is not set. Please pass in a maxprice query parameter." >
+			<error-mapping sourceType="EXPRESSION" targetType="APP:INVALID_NUMBER" />
+		</validation:is-not-null>
 
 		<scatter-gather doc:name="Scatter-Gather"
 			doc:id="366f69fb-5f06-4da7-8aa2-bf4f24d8c7c3">
@@ -54,5 +67,6 @@ using (flattened = flatten(payload..payload as Array) )
 )]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="payload" doc:id="c42fb653-1344-492d-8bc8-4702dc3bf322" message="#[payload]"/>
 	</flow>
 </mule>

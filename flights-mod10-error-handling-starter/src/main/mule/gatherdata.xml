@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		</http:listener>
 		<set-variable value="#[attributes.uriParams.destination]" doc:name="destination" doc:id="c24cc62f-673a-49c0-83b6-71153a7c3b8b" variableName="destinationCode"/>
 		<set-variable value="#[attributes.queryParams.maxprice]" doc:name="maxPrice" doc:id="ceb2692f-9291-4b92-be33-43fcad0ce0da" variableName="maxPrice"/>
-		<validation:is-not-null doc:name="maxPrice" doc:id="2a335e95-a356-4e93-a88a-0112048eac26" value="#[vars.maxPrice]" message="Max price is not set. Please pass in a maxprice query parameter." />
+		<validation:is-not-null doc:name="maxPrice" doc:id="2a335e95-a356-4e93-a88a-0112048eac26" value="vars.maxPrice" message="Max price is not set. Please pass in a maxprice query parameter." />
 		<scatter-gather doc:name="Scatter-Gather" doc:id="5529d0bf-9c13-4d54-a152-b1d575e7468d" >
 			<route >
 				<flow-ref doc:name="getUnited" doc:id="0128b1de-7307-45d9-b363-5073e51bb791" name="getUnited"/>

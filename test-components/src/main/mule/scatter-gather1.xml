@@ -49,7 +49,7 @@ output application/json
 			</route>
 		</scatter-gather>
 		<logger level="INFO" doc:name="Logger" doc:id="9f85ca47-cf0d-4c7c-96a4-6396b71ab1b1" message="#[payload]" />
-		<ee:transform doc:name="Transform Message" doc:id="51071f9a-b1a9-4c50-b88a-e8ef7df8f3fb" >
+		<ee:transform doc:name="to json" doc:id="51071f9a-b1a9-4c50-b88a-e8ef7df8f3fb" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -57,7 +57,7 @@ output application/json
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="e10b8e81-d72b-40e4-bc11-3266e1b01b2e" >
+		<ee:transform doc:name="to array" doc:id="e10b8e81-d72b-40e4-bc11-3266e1b01b2e" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
