@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+
+	<flow name="gatherdataFlow" doc:id="a277507d-ae61-4ffa-84c1-0114f134b5c7">
+		<http:listener doc:name="HTTP: GET /flights/{destination}"
+			doc:id="8a8c8329-b531-4e47-abb8-83e457265cd1" path="/flights/{destination}"
+			config-ref="HTTP_Listener_config" />
+		<set-variable value="#[attributes.uriParams.destination]"
+			doc:name="destination" doc:id="461de16d-d743-4a79-9326-b1aa67bfa151"
+			variableName="destinationCode" />
+		<set-variable value="#[attributes.queryParams.maxprice]"
+			doc:name="maxPrice" doc:id="6994cffa-d1dd-47ea-8d6c-884d12635f4e"
+			variableName="maxPrice" />
+		<validation:is-not-null doc:name="maxPrice"
+			doc:id="6211fe73-e971-4dce-ae90-e4b399313878" value="vars.maxPrice"
+			message="Max price is not set. Please pass in a maxprice query parameter." />
+
+		<scatter-gather doc:name="Scatter-Gather"
+			doc:id="366f69fb-5f06-4da7-8aa2-bf4f24d8c7c3">
+			<route>
+				<flow-ref doc:name="getUnited" doc:id="acaa345b-e1bd-4cbb-a897-37f6cd543652"
+					name="getUnited" />
+			</route>
+			<route>
+				<flow-ref doc:name="getDelta" doc:id="a96d5544-6eff-4fe2-96a4-3252051ea14d"
+					name="getDelta" />
+			</route>
+			<route>
+				<flow-ref doc:name="getAmerican" doc:id="eb99b49b-06a3-4abe-8292-a22b000ccda2"
+					name="getAmerican" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Convert to JSON"
+			doc:id="5c26a1d3-0a9e-41c8-9044-ea3eb7a88f8f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+using (flattened = flatten(payload..payload as Array) )
+(
+ if (not isEmpty(flattened))
+	flattened filter $.price <= vars.maxPrice
+ else
+ 	[]
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
