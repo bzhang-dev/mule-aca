@@ -22,7 +22,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 			<db:sql >SELECT * 
 FROM accounts 
 WHERE postal = :postal
-AND accountID &gt; :lastAccountID</db:sql>
+AND accountID &gt; :lastAccountID limit 10</db:sql>
 			<db:input-parameters ><![CDATA[#[{postal: '94112', lastAccountID: vars.lastAccountID}]]]></db:input-parameters>
 		</db:select>
 		<choice doc:name="Choice" doc:id="fd4135d4-74bb-40c3-b97a-7660c3683a0f" >

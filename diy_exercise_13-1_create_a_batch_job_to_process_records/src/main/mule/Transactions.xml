@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="68b538d5-dcca-434d-a4be-6eaf1f597757" >
+		<vm:queues >
+			<vm:queue queueName="validate" />
+		</vm:queues>
+	</vm:config>
+	<flow name="TransactionsFlow1" doc:id="cb169a57-138d-4ad8-ba9b-b1d605eaf52d" >
+		<vm:listener doc:id="14e5be0c-ad8c-42ea-bb98-6e2ce5326145" config-ref="VM_Config" queueName="validate" doc:name="validate"/>
+		<ee:transform doc:name="validation" doc:id="df8e406c-8231-4219-9503-7050d0765874" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+if (mod(payload.transactionID as Number,4) == 0) true else false]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0207208a-978a-4211-b035-0797fefcdb1b" message="#[payload]"/>
+	</flow>
+	<flow name="TransactionsFlow" doc:id="7a55abfc-d6a9-4f1b-acfa-968a6b9af672" >
+		<scheduler doc:name="Scheduler" doc:id="bc3c2265-926d-424f-bb3a-0548d9c2a01c" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="MINUTES" frequency="12"/>
+			</scheduling-strategy>
+		</scheduler>
+		<os:retrieve doc:id="e011d8e0-89a7-4c54-bf34-3aafc6d339e4" key="maxTransactionID" doc:name="maxTransactionID" target="maxTransactionID">
+			<os:default-value ><![CDATA[#[0]]]></os:default-value>
+		</os:retrieve>
+		<set-variable value="${db.table}" doc:name="table" doc:id="5ccbac0a-ca60-42c0-b98e-5b450586a882" variableName="table"/>
+		<db:select doc:id="67b3d5e5-d577-46e0-9bb9-19d6a3d9cbd4" config-ref="Database_Config">
+			<db:sql>#[&quot;select * from ${db.table} where transactionID &gt;:maxTransactionID order By transactionID asc limit 10&quot;]</db:sql>
+			<db:input-parameters ><![CDATA[#[{maxTransactionID: vars.maxTransactionID}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="2e603665-8327-4fb0-a59b-00e2bbf20ea4" >
+			<when expression="#[not isEmpty(payload)]">
+				<os:store doc:name="maxTransactionID" doc:id="2eaffa59-e1ce-4506-a622-c7cd78552afc" key="maxTransactionID">
+					<os:value><![CDATA[#[max(payload.*transactionID)]]]></os:value>
+				</os:store>
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="c15bdaa8-47a4-4bc3-aace-8dbce2125651" mimeType="application/java" encoding="UTF-8"/>
+				<flow-ref doc:name="Batch" doc:id="7344cb44-3b39-43b2-9e01-bd7b113d8f9b" name="Batch"/>
+			</when>
+		</choice>
+	</flow>
+	<flow name="Batch" doc:id="291fad96-1138-4c81-a9e8-33c7ca855714" >
+		<batch:job jobName="TransactionsBatch_Job" doc:id="30cf475c-3c0b-4824-b61b-de3bdf75e845" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="447d8de6-7168-4c12-8169-ed7517c55751" >
+					<vm:publish-consume queueName="validate" doc:name="Publish consume" doc:id="7fff1366-7b84-404f-96cd-671f318231c9" config-ref="VM_Config" target="vmBoolean"/>
+				</batch:step>
+				<batch:step name="Batch_Step1" doc:id="a82a3232-ad56-48fd-8275-603d26acbf22" acceptExpression="#[vars.vmBoolean]">
+					<set-payload value="#[payload]" doc:name="csv" doc:id="274a9b77-93a1-41a0-a12b-26596ed533db" mimeType="application/java" encoding="UTF-8" />
+					<logger level="INFO" doc:name="Logger" doc:id="2fed6615-8993-4258-92f5-50c6e3521d7a" message="#[payload]"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="d06c9263-59e0-4d4f-9e83-29e4db22beea" size="50">
+						<file:write doc:name="Write" doc:id="a706e5e0-6313-4aa9-b7ff-7662de997d49" path="C:\Users\BoyuanZhang\Desktop\MUFundamentals4.1_studentFiles_22sept2018\resources\output\transactions.csv" mode="APPEND">
+							<file:content ><![CDATA[#[output application/csv header=false --- payload]]]></file:content>
+					</file:write>
+						<logger level="INFO" doc:name="Logger" doc:id="7317546b-e0bc-416d-aca0-fb28d5256e7a" message="#[payload]" />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="57e2be9a-536f-4a46-98a0-48f930a5e51a" />
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>
