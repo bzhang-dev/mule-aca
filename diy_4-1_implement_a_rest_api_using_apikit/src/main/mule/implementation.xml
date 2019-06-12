@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="accountsImpl" doc:id="d072acce-89d3-4c54-b74f-1c087d2f2512">
+
+		<db:select doc:id="64e47054-2cc2-4754-a3ff-c43db8905e53"
+			config-ref="Database_Config" doc:name="${select.table}">
+			<db:sql>select ${select.fields} from ${select.table}</db:sql>
+		</db:select>
+		<ee:transform doc:name="REST Response"
+			doc:id="ab4ebc50-5d39-4fec-a979-621cddc6d2f0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var name = (name) -> (name) splitBy(/ /)
+var custom = payload map
+(item, index) -> {
+	"id": item.accountID,
+	"firstName": name(item.name)[0],
+	"lastName": name(item.name)[1],
+	"address": item.street,
+	"postal": item.postal,
+	"country": item.country,
+	"creationDate": item.creationDate,
+	"accountType": item.accountType,
+	"miles": item.miles
+}
+---
+custom filter(item, index) -> if(vars.params.idTypeParam != null) (item.accountType ~= vars.params.typeParam and item.id ~= vars.params.idTypeParam) else (item.accountType ~= vars.params.typeParam)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+	</flow>
+</mule>

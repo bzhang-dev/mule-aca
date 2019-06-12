@@ -4,4 +4,7 @@ db:
   user: "mule"
   password: "mule"
   database: "training"
+select:
   table: "flights_customers"
+  fields: "*"
+  

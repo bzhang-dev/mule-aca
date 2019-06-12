@@ -8,7 +8,7 @@
         <db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
     </db:config>
     <flow name="accounts-api-main">
-        <http:listener config-ref="accounts-api-httpListenerConfig" path="/api/*">
+        <http:listener config-ref="accounts-api-httpListenerConfig" path="/api/*" doc:name="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]" />
             <http:error-response statusCode="#[vars.httpStatus default 500]">
                 <http:body><![CDATA[#[payload]]]></http:body>
@@ -125,31 +125,9 @@ output application/json
         </error-handler>
     </flow>
     <flow name="get:\accounts:accounts-api-config">
-        <db:select doc:id="79efb16c-2763-45d4-99aa-d3ad2695a778" config-ref="Database_Config">
-            <db:sql>select * from flights_customers</db:sql>
-        </db:select>
-        <ee:transform doc:name="Transform Message" doc:id="21587bb2-63c2-4ec3-850d-da933553c135">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
-var name = (name) -> (name) splitBy(/ /)
-var custom = payload map
-(item, index) -> {
-	"id": item.accountID,
-	"firstName": name(item.name)[0],
-	"lastName": name(item.name)[1],
-	"address": item.street,
-	"postal": item.postal,
-	"country": item.country,
-	"creationDate": item.creationDate,
-	"accountType": item.accountType,
-	"miles": item.miles
-}
----
-custom filter(item, index) -> if(vars.params.idTypeParam != null) (item.accountType ~= vars.params.typeParam and item.id ~= vars.params.idTypeParam) else (item.accountType ~= vars.params.typeParam)]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
-        <logger level="INFO" doc:name="Logger" doc:id="c3196bab-415b-4c64-8fed-ae8e1f1e7fe5" />
+
+        <flow-ref doc:name="accountsImpl" doc:id="c2e96d6b-0ccf-4421-ab78-06e847e538a9" name="accountsImpl"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c3196bab-415b-4c64-8fed-ae8e1f1e7fe5" />
     </flow>
     <flow name="post:\accounts:application\json:accounts-api-config">
         <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="b94ef983-648a-466a-a6d7-0bdf615e07ee">
