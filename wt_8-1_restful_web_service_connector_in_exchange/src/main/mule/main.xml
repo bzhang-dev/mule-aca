@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:american-flights-api1="http://www.mulesoft.org/schema/mule/american-flights-api1" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/american-flights-api1 http://www.mulesoft.org/schema/mule/american-flights-api1/current/mule-american-flights-api1.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5cd4b9b5-f4b7-45de-b6b7-66a83bf97f9d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<american-flights-api1:config name="American_Flights_API_1_Config" doc:name="American Flights API 1 Config" doc:id="5192b180-2a8a-4afd-8e71-c5a25f79a3b9" property_host="training4-american-ws-bzhang-api-mule.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" />
+	<flow name="mainFlow" doc:id="817a951f-f890-4db7-83ba-a74d3bf8a7ae" >
+		<http:listener doc:name="Listener" doc:id="8deae5e4-361d-4f87-a027-ea55cfedf7f6" config-ref="HTTP_Listener_config" path="/american"/>
+		<logger level="INFO" doc:name="Logger" doc:id="301d2919-d09c-4c6c-8724-25ca023b735f" />
+		<american-flights-api1:get-flights doc:name="Get flights" doc:id="34d3f73f-cc3d-4eff-ad96-795350f0feb2" client-secret="7A6c45D9daA04ba48dD071346dEb7eBA" client-id="f294c0eea48e47c69771734d69eb4222" config-ref="American_Flights_API_1_Config"/>
+	</flow>
+</mule>

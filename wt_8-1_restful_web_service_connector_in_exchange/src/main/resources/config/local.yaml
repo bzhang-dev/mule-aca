@@ -1,0 +1,8 @@
+
+american: 
+  host: "training4-american-ws-bzhang-api-mule.us-e2.cloudhub.io"
+  port: "80"
+  basepath: "/"
+  protocolo: "HTTP"
+  client_id: "f294c0eea48e47c69771734d69eb4222"
+  client_secret: "7A6c45D9daA04ba48dD071346dEb7eBA"

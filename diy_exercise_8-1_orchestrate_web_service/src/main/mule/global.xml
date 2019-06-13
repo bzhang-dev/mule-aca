@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<global-property doc:name="Global Property"
+		doc:id="f04b0ea4-12f0-444e-8cd9-f55676f5d5ce" name="env" value="local" />
+	<configuration-properties doc:name="Configuration properties"
+		doc:id="f86adb9e-be80-4dd5-8f11-254b3297a9a9" file="config/config.yaml" />
+	<http:listener-config name="accounts-api-httpListenerConfig">
+		<http:listener-connection host="${http.host}"
+			port="${http.port}" />
+	</http:listener-config>
+</mule>
