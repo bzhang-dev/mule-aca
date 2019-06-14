@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f1039c56-1e5a-473c-8ad3-168b3804fcb8" basePath="/api" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<sub-flow name="Request" doc:id="68810e94-07d5-474a-9bb3-4ab54d951eb0" >
+		<http:request method="#[attributes.method]" doc:name="Request" doc:id="54e7dda1-9430-4cd5-b05a-a5162d3ee2d1" config-ref="HTTP_Request_configuration" path="#[attributes.requestPath]" responseTimeout="60000">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Requester-ID" : attributes.headers.'Requester-ID'
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"type" : attributes.queryParams.'type'
+}]]]></http:query-params>
+		</http:request>
+	</sub-flow>
+	<flow name="getAccounts" doc:id="9adfbbf2-b93c-40d8-8669-b23eb32f62f4" >
+		<http:listener doc:name="GET /accounts" doc:id="6f20b975-5122-43a3-9cb9-b8530a441111" path="/accounts" allowedMethods="GET" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="9cb3d7ba-c7c7-4924-be41-829a8ec3c455" name="Request" />
+	</flow>
+	<flow name="postAccounts" doc:id="a2d13110-8e97-4289-b7d0-267cca0164fc" >
+		<http:listener doc:name="POST /accounts" doc:id="f6187cd3-b018-4243-956e-8bb594ab964e" allowedMethods="POST" path="/accounts" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="636f8c71-42d8-4074-af96-db3d085a370a" name="Request"/>
+	</flow>
+	<flow name="getAccountsID" doc:id="d6aa20ae-4440-4904-9d56-a9e80025a387" >
+		<http:listener doc:name="GET /accounts/{id}" doc:id="e7b2ee9d-941a-4fd7-a90e-5cb9eb6a8c9c" path="/accounts/{id}" allowedMethods="GET" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="35c076ec-d844-4762-bdcd-7a27ee90766c" name="Request"/>
+	</flow>
+	<flow name="putAccountsID" doc:id="01a99916-0a2c-4041-b287-472fb0a7fdc2" >
+		<http:listener doc:name="PUT /accounts/{id}" doc:id="57d628a7-e6b6-478f-8ddd-9820c337ca97" path="/accounts/{id}" allowedMethods="PUT" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="9a48216f-8541-4f8e-997a-422dafd53ae2" name="Request"/>
+	</flow>
+	<flow name="patchAccountsID" doc:id="04348e34-55af-4224-9762-a1226fa72da7" >
+		<http:listener doc:name="PATCH /accounts/{id}" doc:id="1061ad31-80be-4494-b1db-8bde9154b596" path="/accounts/{id}" allowedMethods="PATCH" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="d62464ce-6417-40b7-9991-20e32dc67568" name="Request"/>
+	</flow>
+	<flow name="deleteAccountID" doc:id="f5f5e38b-f2e7-4482-bc18-a6e9cba1a72b" >
+		<http:listener doc:name="DELETE /accounts/{id}" doc:id="96be113d-c34c-4243-b181-ac2e0e598815" path="/accounts/{id}" allowedMethods="DELETE" config-ref="accounts-api-httpListenerConfig"/>
+		<flow-ref doc:name="Request" doc:id="288cd644-3e1e-442d-81f6-8f7aa09fc3ae" name="Request"/>
+	</flow>
+</mule>

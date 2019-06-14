@@ -1,11 +1,12 @@
 {
   "configs": [
     "accounts-api.xml",
-    "implementation.xml"
+    "implementation.xml",
+    "tests.xml"
   ],
   "secureProperties": [],
   "redeploymentEnabled": true,
-  "name": "accounts-mod04-api-implementation",
+  "name": "accounts-mod04-api-implementation-solution",
   "minMuleVersion": "4.1.2",
   "requiredProduct": "MULE_EE",
   "classLoaderModelLoaderDescriptor": {
