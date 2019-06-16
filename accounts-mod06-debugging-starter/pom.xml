@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mycompany</groupId>
-	<artifactId>accounts-mod04-api-implementation</artifactId>
+	<artifactId>accounts-mod06-api-implementation</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 
@@ -106,11 +106,11 @@
 			<artifactId>spring-beans</artifactId>
 			<version>4.1.9.RELEASE</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.mulesoft.training</groupId> -->
-<!-- 			<artifactId>templates</artifactId> -->
-<!-- 			<version>1.0.0</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>com.mulesoft.training</groupId>
+			<artifactId>templates</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 <!-- 		<dependency> -->
 <!-- 			<groupId>org.apache.derby</groupId> -->
 <!-- 			<artifactId>derbyclient</artifactId> -->
