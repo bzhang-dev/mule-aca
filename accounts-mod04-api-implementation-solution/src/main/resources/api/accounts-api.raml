@@ -5,8 +5,17 @@ types:
   Account: !include datatypes/account.raml
   AccountNoID: !include datatypes/accountNoID.raml
 
+traits:
+  client-id-required:
+    headers:
+      client_id:
+        type: string
+      client_secret:
+        type: string
+
 /accounts:
   get:
+    is: [client-id-required]  
     description: Retrieves accounts based on the given query parameters.
     headers:
       Requester-ID:
@@ -38,6 +47,7 @@ types:
             type: Account[]
             example:  !include examples/accountsExample.raml
   post:
+    is: [client-id-required]  
     description: Creates new accounts based on a given array of Account objects.
     headers:
       Requester-ID:
