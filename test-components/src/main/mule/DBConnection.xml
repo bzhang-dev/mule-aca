@@ -20,10 +20,10 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<logger level="INFO" doc:name="Logger" doc:id="308096d5-4a2d-453b-a555-15b848f640d1" message="#[payload]"/>
 		<logger level="INFO" doc:name="Logger" doc:id="20b42836-2bea-45a7-95f0-0a2c57854e51" />
 	</flow>
-	<flow name="DBConnectionFlow1" doc:id="73e45742-2d89-4098-916a-00c9a9a22e83" >
+	<flow name="DBConnectionFlow1" doc:id="73e45742-2d89-4098-916a-00c9a9a22e83" initialState="stopped">
 		<db:listener table="Employees" doc:name="On Table Row" doc:id="885e048c-b45c-4068-9039-f2d7e3ac7ae7" config-ref="Database_Config" watermarkColumn="username" idColumn="username">
 			<scheduling-strategy >
-				<fixed-frequency />
+				<fixed-frequency timeUnit="DAYS"/>
 			</scheduling-strategy>
 		</db:listener>
 		<logger level="INFO" doc:name="Logger" doc:id="c5c580c1-b093-4e7a-87eb-c69d49d1448d" message="#[payload]"/>

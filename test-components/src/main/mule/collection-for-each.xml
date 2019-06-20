@@ -11,12 +11,29 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 				<fixed-frequency timeUnit="DAYS"/>
 			</scheduling-strategy>
 		</scheduler>
-		<ee:transform doc:name="Transform Message" doc:id="d958a52e-2c1a-4f40-ba31-382758045d00" >
+		<ee:transform doc:name="xml" doc:id="d958a52e-2c1a-4f40-ba31-382758045d00" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+output application/xml
+//[1,2,3,3]
 ---
-[1,2,3,3]]]></ee:set-payload>
+root
+: elements: {
+	eleme @(attri:"ciao"): "ciao"
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="json" doc:id="ea63344e-f736-4752-95d2-8193342f80f8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	elem: payload.root.elements.eleme,
+	attri: payload.root.elements.eleme.@attri
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<foreach doc:name="For Each" doc:id="00445071-4f43-43f8-97c4-487fe03dedfb" >

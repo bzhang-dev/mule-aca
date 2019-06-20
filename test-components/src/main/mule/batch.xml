@@ -42,23 +42,24 @@ output application/java
 				<fixed-frequency timeUnit="DAYS"/>
 			</scheduling-strategy>
 		</scheduler>
-		<ee:transform doc:name="[1,2,3,4]" doc:id="c1687188-3e92-49d1-8212-3f84ec8ef28c" >
+		<ee:transform doc:name="[1,2,3,4,5,6]" doc:id="c1687188-3e92-49d1-8212-3f84ec8ef28c" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-[1,2,3,4]]]></ee:set-payload>
+[1,2,3,4,5,6]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<batch:job jobName="batchBatch_Job1" doc:id="887ee5b2-8ce4-4ce8-b189-b35de27044dc" >
 			<batch:process-records >
-				<batch:step name="Batch_Step2" doc:id="7e353aaf-58b4-487e-a077-1f20aa275526" acceptExpression="#[(payload mod 2) !=0]">
-					<ee:transform doc:name="Divide by 3" doc:id="0631266a-b341-4574-8278-dd28af9c34d7" >
+				<batch:step name="Batch_Step2" doc:id="7e353aaf-58b4-487e-a077-1f20aa275526" acceptExpression="#[(payload mod 2) ==0]">
+					<ee:transform doc:name="Multiply by 10" doc:id="0631266a-b341-4574-8278-dd28af9c34d7" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
+//payload / 3
 ---
-payload / 3]]></ee:set-payload>
+payload * 10]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
 					<batch:aggregator doc:name="Batch Aggregator" size="2">
